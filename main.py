@@ -1,6 +1,20 @@
-from fastapi import FastAPI, status, HTTPException
+from fastapi import FastAPI, status, HTTPException, Depends
 from pydantic import BaseModel
 from enum import Enum
+
+API_KEY = "auth"
+DEV_KEY = "coffee"
+
+class Auth(BaseModel):
+    api_key: str = ""
+    dev_key: str = ""
+
+def verificacao_api_key(key: Auth):
+    if key.api_key != API_KEY:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="API key não altorizada!")
+    
+    return {"api_key": key.api_key}
+
 
 description = f"""
     API desenvolvida para fins de estudo do FastAPI
@@ -20,7 +34,7 @@ app = FastAPI(
         "name": "Marcos",
         "url": "https://github.com/Markoro-Original",
     },
-    
+    dependencies=[Depends(verificacao_api_key)]    
 )
 
 class NomeGrupo(str, Enum):
@@ -106,20 +120,8 @@ def divisao(num: Numero) -> ResultadoFloat:
     return {"resultado": total}
 
 
-
-API_KEY = "auth"
-DEV_KEY = "coffee"
-
-class Auth(BaseModel):
-    api_key: str = ""
-    dev_key: str = ""
-
 @app.post("/v1/soma_auth", tags=[NomeGrupo.operacao])
-def soma_auth(num: Numero, key: Auth) -> Resultado:
-
-    if key.api_key != API_KEY:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="API key não altorizada!")
-    
+def soma_auth(num: Numero) -> Resultado:
     total = num.numero1 + num.numero2
     return {"resultado": total}
 
