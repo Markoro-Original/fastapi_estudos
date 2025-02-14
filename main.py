@@ -29,3 +29,16 @@ class Numero(BaseModel):
 def soma_pydantic(num: Numero):
     total = num.numero1 + num.numero2
     return {"resultado": total}
+
+class Resultado(BaseModel):
+    resultado: int
+
+@app.post("/soma_com_response_model", response_model=Resultado)
+def soma_response_model(num: Numero):
+    total = num.numero1 + num.numero2
+    return {"resultado": total}
+
+@app.post("/soma_com_response_model_2")
+def soma_response_model_2(num: Numero) -> Resultado:
+    total = num.numero1 + num.numero2
+    return {"resultado": total}
